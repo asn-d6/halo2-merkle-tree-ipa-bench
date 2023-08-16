@@ -1,17 +1,21 @@
-# halo2-merkle-tree
+# halo2-merkle-tree-ipa-bench
 
-This repo includes a few chips and circuits that slowly towards a fully function merkle tree chip implementation in Halo2 with the Poseidon hash function.
+Benchmarking membership proofs (merkle proof creation and verification) using Halo2 and IPAs.
 
-## Instruction
+Such membership proofs can be used in anonymous credential schemes (like the ones required by the proof of validator).
 
-Compile the repo
+The circuit logic is directly taken from the [halo2-merkle-tree](https://github.com/jtguibas/halo2-merkle-tree/)
+project. All props go to @jtguibas and @enricobottazzi.
 
-```
-cargo build
-```
+The following modifications were done to the original repository:
+- Simplifies some circuits and deletes unused ones
+- Massages circuit creation code to use the `create_proof()` API
+- Writes benchmarks for the prover and verifier
+- Address all compiler warnings
 
-Run examples
+This code just exists to collect some rough benchmarks. Don't even think about using this in production.
 
-```
-cargo test -- --nocapture test
-```
+## Usage
+
+Just do `cargo bench`
+
