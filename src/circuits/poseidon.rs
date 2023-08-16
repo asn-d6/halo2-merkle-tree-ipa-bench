@@ -4,19 +4,29 @@ is already implemented in halo2_gadgets, there is no wrapper chip that makes it 
 */
 
 use super::super::chips::poseidon::{PoseidonChip, PoseidonConfig};
-use halo2_gadgets::poseidon::{primitives::*};
-use halo2_proofs::{circuit::*, pasta::Fp, plonk::*};
+use halo2_gadgets::poseidon::{
+    primitives::{Spec},
+};
+use halo2_proofs::{
+    circuit::{Layouter, SimpleFloorPlanner, Value},
+    plonk::{
+        Circuit,
+        ConstraintSystem, Error,
+    },
+};
+use halo2curves::pasta::{Fp};
 use std::marker::PhantomData;
 
-struct PoseidonCircuit<
+#[derive(Debug, Clone, Copy)]
+pub struct PoseidonCircuit<
     S: Spec<Fp, WIDTH, RATE>,
     const WIDTH: usize,
     const RATE: usize,
     const L: usize,
 > {
-    message: [Value<Fp>; L],
-    output: Value<Fp>,
-    _spec: PhantomData<S>,
+    pub message: [Value<Fp>; L],
+    pub output: Value<Fp>,
+    pub _spec: PhantomData<S>,
 }
 
 impl<S: Spec<Fp, WIDTH, RATE>, const WIDTH: usize, const RATE: usize, const L: usize> Circuit<Fp>
@@ -28,7 +38,7 @@ impl<S: Spec<Fp, WIDTH, RATE>, const WIDTH: usize, const RATE: usize, const L: u
     fn without_witnesses(&self) -> Self {
         Self {
             message: (0..L)
-                .map(|i| Value::unknown())
+                .map(|_i| Value::unknown())
                 .collect::<Vec<Value<Fp>>>()
                 .try_into()
                 .unwrap(),
@@ -55,20 +65,22 @@ impl<S: Spec<Fp, WIDTH, RATE>, const WIDTH: usize, const RATE: usize, const L: u
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use std::marker::PhantomData;
-
-    use super::PoseidonCircuit;
+    use super::*;
+    use crate::utils::p128pow5t3::P128Pow5T3 as OrchardNullifier;
     use halo2_gadgets::poseidon::{
-        primitives::{self as poseidon, ConstantLength, P128Pow5T3 as OrchardNullifier, Spec},
-        Hash,
+        primitives::{self as poseidon, ConstantLength},
     };
-    use halo2_proofs::{circuit::Value, dev::MockProver, pasta::Fp};
+    use halo2_proofs::arithmetic::Field;
+    use halo2_proofs::dev::MockProver;
+    use rand_core::OsRng;
+    use std::marker::PhantomData;
 
     #[test]
     fn test() {
-        let input = 99u64;
-        let message = [Fp::from(input), Fp::from(input)];
+        let mut rng = OsRng;
+        let message = [Fp::random(&mut rng), Fp::random(&mut rng)];
         let output =
             poseidon::Hash::<_, OrchardNullifier, ConstantLength<2>, 3, 2>::init().hash(message);
 

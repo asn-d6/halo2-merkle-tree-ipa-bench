@@ -3,8 +3,18 @@ An easy-to-use implementation of the Poseidon Hash in the form of a Halo2 Chip. 
 is already implemented in halo2_gadgets, there is no wrapper chip that makes it easy to use in other circuits.
 */
 
-use halo2_gadgets::poseidon::{primitives::*, Hash, Pow5Chip, Pow5Config};
-use halo2_proofs::{circuit::*, pasta::Fp, plonk::*};
+use halo2_gadgets::poseidon::{
+    primitives::{ConstantLength, Spec},
+    Hash, Pow5Chip, Pow5Config,
+};
+use halo2_proofs::{
+    circuit::{AssignedCell, Layouter, Value},
+    plonk::{
+        Advice, Column,
+        ConstraintSystem, Error, Instance,
+    },
+};
+use halo2curves::pasta::{Fp};
 use std::marker::PhantomData;
 
 #[derive(Debug, Clone)]
